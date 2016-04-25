@@ -47,15 +47,15 @@
     - set_fact: log_file="{{remote_path}}{{output_file}}.{{ec2_region}}.{{loader_ip}}"
 
     - name: run cassandra-stress withe one insert to create the table
-      shell: cassandra-stress write n=1 no-warmup -node {{ip_list}} -rate threads=1  {{stress_options}}
+      shell: cassandra-stress write n=1 no-warmup -node {{ip_list}} -rate threads=1
       when: profile_file is undefined
       run_once: true
 
-    - shell: sleep {{sleep_between_runs}}; {{taskset}} cassandra-stress {{command}} no-warmup {{command_options}} -node {{ip_list}} -rate threads={{threads}} -log file={{log_file}}.{{iteration}}.data {{stress_options}}
+    - shell: sleep {{sleep_between_runs}}; {{taskset}} cassandra-stress {{stress_options}} -node {{ip_list}} -log file={{log_file}}.{{iteration}}.data
       when: profile_file is undefined
       ignore_errors: True
 
-    - shell: sleep {{sleep_between_runs}}; {{taskset}} cassandra-stress user profile={{profile_file}} no-warmup {{command_options}} -node {{ip_list}} -rate threads={{threads}} -log file={{log_file}}.{{iteration}}.data {{stress_options}}
+    - shell: sleep {{sleep_between_runs}}; {{taskset}} cassandra-stress user profile={{profile_file}} {{stress_options}} -node {{ip_list}} -log file={{log_file}}.{{iteration}}.data {{stress_options}}
       when: profile_file is defined
       ignore_errors: True
 
