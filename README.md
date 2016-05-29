@@ -11,8 +11,8 @@ The following will compare Scylla cluster to Cassandra cluster performance on EC
 ./ec2-setup-scylla.sh -e "cluster_nodes=2"
 ./ec2-setup-cassandra.sh -e "cluster_nodes=2"
 ./ec2-setup-loadgen.sh -e "load_nodes=6"
-./ec2-stress.sh 1 -e "load_name=cassandra.v1" -e "server=Cassandra" -e "stress_options='-errors ignore'"
-./ec2-stress.sh 1 -e "load_name=scylla.v1" -e "server=Scylla" -e "stress_options='-errors ignore'"
+./ec2-stress.sh 1 -e "load_name=cassandra.v1" -e "server=Cassandra" -e "stress_options='write -rate threads=500 -errors ignore'"
+./ec2-stress.sh 1 -e "load_name=scylla.v1" -e "server=Scylla" -e "stress_options='write -rate threads=500 -errors ignore'"
 ```
 Note you will need more load nodes to stress Scylla.
 
@@ -151,12 +151,19 @@ Loaders are launch from Scylla AMI, base on Fedora 22 (login fedora), including 
 ### Run Load
 
 ```
-./ec2-stress.sh <iterations> -e "load_name=late_night" -e "server=Scylla" <more options>
+./ec2-stress.sh <iterations> -e "load_name=late_night" -e "server=Scylla" -e "stress_options=command [options]"
 ```
+
+**Examples**
+
+```./ec2-stress.sh 1 -e "load_name=first_run.v1" -e "server=Scylla" -e "stress_options='write -rate threads=500'"```
+
+
+```./ec2-stress.sh 1 -e "load_name=first_run.v1" -e "server=Scylla" -e "stress_options='write duration=3m cl=QUORUM -pop seq=1..1000000 -rate threads=500 -schema  keyspace=\"mykeyspace\" \"replication(factor=2)\" '" -vv```
 
 for multi region (update the regions and replication for your needs)
 ```
-./ec2-stress.sh 1 -e "load_name=cassandra.multi.v1" -e "server=Cassandra" -e "stress_options='-schema \"replication(strategy=NetworkTopologyStrategy,us-east_test=1,us-west-2_test=1)\" keyspace=\"mykeyspace\"'" 
+./ec2-stress.sh 1 -e "load_name=cassandra.multi.v1" -e "server=Cassandra" -e "stress_options='write -schema \"replication(strategy=NetworkTopologyStrategy,us-east_test=1,us-west-2_test=1)\" keyspace=\"mykeyspace\"'" 
 ```
 
 **Options**
@@ -167,13 +174,7 @@ To override each of the parameter, use the ``-e "param=value"
 notation. Examples below:
 
 * ```-e "server=Cassandra"``` - test cassandra servers (default is scylla)
-* ```-e "populate=2500000"``` - key population per loader (default is 1000000)
 * ```-e "command=write"``` [read, write,mixed,..] setting stress command
-* ```-e "stress_options='-schema \"replication(factor=2)\"'"```
-* ```-e "stress_options='-errors ignore'"```
-* ```-e "command_options='cl=LOCAL_ONE -mode native cql3'"```
-* ```-e "command_options=duration=60m"```
-* ```-e "threads=200"```
 * ```-e "profile_dir=/tmp/cassandra-stress-profiles/" -e "profile_file=cust_a/users/users1.yaml" -e "command_options=ops\\(insert=1\\)"```
 * ```-e "clean_data=true"``` - clean all data from DB servers and restart them before starting the stress
 
@@ -181,6 +182,7 @@ Make sure **load name is unique**  so the new results will not
 override an old run in the same day.
 
 Load name can not not include *-* (dash)
+
 
 ### Results
 
