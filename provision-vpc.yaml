@@ -1,0 +1,38 @@
+---
+- name: Provision VPC
+  hosts: localhost
+  connection: local
+
+  vars:
+    resource_tags: {"Database": "{{db}}"}
+    ec2_vpc_ids: {}
+    ec2_vpc_subnet_ids: {}
+
+  tasks:
+    - name: Create VPC
+      local_action:
+        module: ec2_vpc
+        region: "{{item.value.region_name}}"
+        cidr_block: "{{item.value.vpc_subnet_cidr}}"
+        state: present
+        internet_gateway: True
+        resource_tags: '{{resource_tags}}'
+        subnets:
+           - cidr: "{{item.value.vpc_subnet_cidr}}"
+             resource_tags: '{{resource_tags}}'
+        route_tables:
+           - subnets:
+               - "{{item.value.vpc_subnet_cidr}}"
+             routes:
+               - dest: 0.0.0.0/0
+                 gw: igw
+      register: ec2_vpc
+      with_dict: '{{use_regions}}'
+
+    - name: Registering VPC IDs
+      set_fact: "ec2_vpc_ids={{ec2_vpc_ids|combine({item.vpc.region: item.vpc.id})}}"
+      with_items: '{{ec2_vpc.results}}'
+
+    - name: Registering VPC subnet IDs
+      set_fact: "ec2_vpc_subnet_ids={{ec2_vpc_subnet_ids|combine({item.vpc.region: item.subnets[0].id})}}"
+      with_items: '{{ec2_vpc.results}}'
