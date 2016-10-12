@@ -32,7 +32,7 @@
         region: "{{item.value.region_name}}"
         keypair: "{{setup_name}}-test-and-deploy-key"
         group: "{{item.value.security_group}}"
-        vpc_subnet_id: "{{item.value.vpc_subnet_id}}"
+        vpc_subnet_id: "{{ec2_vpc_subnet_ids[item.value.region_name]}}"
         assign_public_ip: yes
         instance_type: "{{instance_type}}"
         image: "{{item.value[image]}}"

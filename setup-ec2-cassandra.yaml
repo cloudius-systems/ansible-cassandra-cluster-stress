@@ -1,4 +1,6 @@
 ---
 - include: create-keys.yaml
+- include: provision-vpc.yaml db=cassandra
+- include: provision-security-group.yaml
 - include: provision-db.yaml db=cassandra db_version=community
 - include: prepare-cassandra.yaml

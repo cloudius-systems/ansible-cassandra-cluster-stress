@@ -1,14 +1,14 @@
 ---
-- name: Provision Cassandra cluster security group
+- name: Provision Cassandra cluster security groups
   hosts: 127.0.0.1
   connection: local
   tasks:
     - name: Create security group roles
       local_action:
         module: ec2_group
-        name: "{{security_group}}"
-        region: "{{region}}"
-        vpc_id: "{{vpc_id}}"
+        name: "{{regions[item.key].security_group}}"
+        region: "{{item.key}}"
+        vpc_id: "{{item.value}}"
         description: "Cassandra Cluster Security Group"
         rules:
           - proto: tcp
@@ -38,11 +38,11 @@
           - proto: tcp
             from_port: 7001
             to_port: 7001
-            group_name: "{{security_group}}"
+            group_name: "{{regions[item.key].security_group}}"
           - proto: tcp
             from_port: 7199
             to_port: 7199
-            group_name: "{{security_group}}"
+            group_name: "{{regions[item.key].security_group}}"
           - proto: tcp
             from_port: 9042
             to_port: 9042
@@ -54,11 +54,11 @@
           - proto: tcp
             from_port: 61620
             to_port: 61620
-            group_name: "{{security_group}}"
+            group_name: "{{regions[item.key].security_group}}"
           - proto: tcp
             from_port: 61621
             to_port: 61621
-            group_name: "{{security_group}}"
+            group_name: "{{regions[item.key].security_group}}"
           - proto: udp
             from_port: 25826
             to_port: 25826
@@ -66,15 +66,15 @@
           - proto: udp
             from_port: 5555
             to_port: 5555
-            group_name: "{{security_group}}"
+            group_name: "{{regions[item.key].security_group}}"
           - proto: tcp
             from_port: 5555
             to_port: 5555
-            group_name: "{{security_group}}"
+            group_name: "{{regions[item.key].security_group}}"
           - proto: udp
             from_port: 5556
             to_port: 5556
-            group_name: "{{security_group}}"
+            group_name: "{{regions[item.key].security_group}}"
           - proto: tcp
             from_port: 4567
             to_port: 4567
@@ -82,7 +82,7 @@
           - proto: tcp
             from_port: 2003
             to_port: 2003
-            group_name: "{{security_group}}"
+            group_name: "{{regions[item.key].security_group}}"
           - proto: tcp
             from_port: 5000
             to_port: 5000
@@ -100,3 +100,5 @@
           - proto: all
             type: all
             cidr_ip: 0.0.0.0/0
+
+      with_dict: '{{ec2_vpc_ids}}'
